@@ -1,0 +1,58 @@
+#include "LyApp.h"
+#include "Moose.h"
+#include "AppFactory.h"
+#include "ModulesApp.h"
+#include "MooseSyntax.h"
+
+#include "LYDiff.h"
+#include "LYForce.h"
+
+#include "LYMaterial.h"
+
+template<>
+InputParameters validParams<LyApp>()
+{
+  InputParameters params = validParams<MooseApp>();
+  return params;
+}
+
+LyApp::LyApp(InputParameters parameters) :
+    MooseApp(parameters)
+{
+  Moose::registerObjects(_factory);
+  ModulesApp::registerObjects(_factory);
+  LyApp::registerObjects(_factory);
+
+  Moose::associateSyntax(_syntax, _action_factory);
+  ModulesApp::associateSyntax(_syntax, _action_factory);
+  LyApp::associateSyntax(_syntax, _action_factory);
+}
+
+LyApp::~LyApp()
+{
+}
+
+// External entry point for dynamic application loading
+extern "C" void LyApp__registerApps() { LyApp::registerApps(); }
+void
+LyApp::registerApps()
+{
+  registerApp(LyApp);
+}
+
+// External entry point for dynamic object registration
+extern "C" void LyApp__registerObjects(Factory & factory) { LyApp::registerObjects(factory); }
+void
+LyApp::registerObjects(Factory & factory)
+{
+  registerKernel(LYDiff);
+  registerKernel(LYForce);
+  registerMaterial(LYMaterial);
+}
+
+// External entry point for dynamic syntax association
+extern "C" void LyApp__associateSyntax(Syntax & syntax, ActionFactory & action_factory) { LyApp::associateSyntax(syntax, action_factory); }
+void
+LyApp::associateSyntax(Syntax & /*syntax*/, ActionFactory & /*action_factory*/)
+{
+}
